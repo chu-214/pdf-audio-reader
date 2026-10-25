@@ -1,10 +1,12 @@
 import { DEFAULT_SETTINGS, type Block, type Chunk, type ReaderPage, type ScanSettings, type SkipReason } from '../types';
+import { isUrlOnly, stripUrls } from './urls';
 
 const keys: Record<SkipReason, keyof ScanSettings> = {
   'page-number': 'pageNumbers', 'repeated-margin': 'repeatedMargins',
   'footer-link': 'footerLinks', footnote: 'footnotes', decorative: 'decorative',
 };
 export function isIncluded(block: Block, settings: ScanSettings = DEFAULT_SETTINGS): boolean {
+  if (isUrlOnly(block.text)) return false;
   if (block.override !== undefined) return block.override;
   return !block.reason || !settings[keys[block.reason]];
 }
@@ -42,7 +44,7 @@ export function classifyPages(pages: ReaderPage[]): ReaderPage[] {
       const text = normalize(b.text);
       if (margin && /^(?:[-–—·|]\s*)?(?:(?:page|p\.)\s*)?(?:\d{1,5}(?:\s*(?:of|\/)\s*\d{1,5})?|[ivxlcdm]{1,8})(?:\s*[-–—·|])?$/i.test(text)) {
         b.reason = 'page-number';
-      } else if (bottom && /(?:https?:\/\/|www\.|doi\.org\/|\b[\w.+-]+@[\w.-]+\.[a-z]{2,}\b)/i.test(text) && text.length < 240) {
+      } else if (isUrlOnly(text) || (bottom && /(?:https?:\/\/|www\.|doi\.org\/|\b[\w.+-]+@[\w.-]+\.[a-z]{2,}\b)/i.test(text) && text.length < 240)) {
         b.reason = 'footer-link';
       } else if (margin && (seen.get(marginKey(text))?.size ?? 0) >= Math.max(2, Math.ceil(pages.length * .4))) {
         b.reason = 'repeated-margin';
@@ -86,9 +88,9 @@ export function readingOrder(blocks: Block[], depth = 0): Block[] {
   return [...blocks].sort((a, b) => Math.abs(a.y - b.y) < font * .4 ? a.x - b.x : a.y - b.y);
 }
 
-/** Keep utterances short: long utterances can stall Chromium speech engines. */
+/** Sentence navigation units. The neural player groups them into bounded passages. */
 export function splitSpeech(text: string, max = 230): string[] {
-  const normalized = normalize(text);
+  const normalized = normalize(stripUrls(text));
   const pieces = typeof Intl.Segmenter === 'function'
     ? Array.from(new Intl.Segmenter(undefined, { granularity: 'sentence' }).segment(normalized), part => part.segment)
     : normalized.split(/(?<=[.!?。！？])\s+(?=[A-Z0-9])/u);

@@ -49,5 +49,5 @@ export const DEFAULT_SETTINGS: ScanSettings = {
 };
 export const REASON_LABELS: Record<SkipReason, string> = {
   'page-number': 'Page number', 'repeated-margin': 'Repeated header or footer',
-  'footer-link': 'Footer link', footnote: 'Small-print footnote', decorative: 'Decorative mark',
+  'footer-link': 'URL', footnote: 'Small-print footnote', decorative: 'Decorative mark',
 };

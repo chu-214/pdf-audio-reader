@@ -10,3 +10,4 @@ coverage/
 tmp/
 .openai/
 public/pdf-assets/
+public/voice-assets/

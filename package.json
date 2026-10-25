@@ -4,22 +4,28 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "predev": "node scripts/copy-pdf-assets.mjs",
+    "prebuild": "node scripts/copy-pdf-assets.mjs",
     "dev": "vite --host 127.0.0.1",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 127.0.0.1",
     "test": "vitest run",
     "test:watch": "vitest",
+    "check:voice": "node scripts/check-voice.mjs",
     "fixtures": "node scripts/create-fixtures.mjs",
     "check": "npm run test && npm run build",
     "postinstall": "node scripts/copy-pdf-assets.mjs"
   },
   "dependencies": {
     "idb": "^8.0.3",
+    "kokoro-js": "^1.2.1",
+    "linkify-it": "^6.1.0",
     "lucide-react": "^0.468.0",
     "pdfjs-dist": "^6.4.299",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "tesseract.js": "^6.0.1"
+    "tesseract.js": "^6.0.1",
+    "tlds": "^1.261.0"
   },
   "devDependencies": {
     "@napi-rs/canvas": "^1.0.13",
@@ -27,6 +33,7 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "esbuild": "^0.28.2",
     "fake-indexeddb": "^6.2.4",
     "pdf-lib": "^1.17.1",
     "typescript": "~5.9.3",
@@ -35,5 +42,8 @@
   },
   "engines": {
     "node": ">=22.13.0"
+  },
+  "overrides": {
+    "sharp": "^0.35.5"
   }
 }

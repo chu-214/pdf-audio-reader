@@ -11,11 +11,13 @@ describe('content classification', () => {
     expect(pages[0].blocks.map(b => b.reason)).toEqual(['repeated-margin', undefined, 'page-number']);
     expect(pageText(pages[0], DEFAULT_SETTINGS)).toBe('This important repeated body text should always be read.');
   });
-  it('keeps meaningful numbers and links in the body, flags footer URLs', () => {
+  it('keeps meaningful numbers and body prose while removing their URLs from narration', () => {
     const [result] = classifyPages([page(1, [block('2026'), block('Visit https://example.org for the complete analysis.'), block('https://example.org/report', 60, 710)])]);
     expect(result.blocks[0].reason).toBeUndefined();
     expect(result.blocks[1].reason).toBeUndefined();
     expect(result.blocks[2].reason).toBe('footer-link');
+    expect(pageText(result, DEFAULT_SETTINGS)).not.toContain('https://');
+    expect(pageText(result, DEFAULT_SETTINGS)).toContain('Visit for the complete analysis.');
   });
   it('detects page-number formats only at margins', () => {
     for (const text of ['1', 'Page 3 of 12', '3 / 12', 'iv', '— 42 —']) {
@@ -68,8 +70,8 @@ describe('reading order and narration', () => {
     expect(splitSpeech('One sentence. Another question? Yes!')).toEqual(['One sentence.', 'Another question?', 'Yes!']);
     expect(splitSpeech('  ')).toEqual([]);
   });
-  it('does not split decimal numbers, emails, or URLs at periods', () => {
+  it('keeps decimal numbers intact while removing addresses from speech', () => {
     const text = 'Revenue is 12.5 percent. Visit https://example.org/research or email reader@example.org.';
-    expect(splitSpeech(text)).toEqual(['Revenue is 12.5 percent.', 'Visit https://example.org/research or email reader@example.org.']);
+    expect(splitSpeech(text)).toEqual(['Revenue is 12.5 percent.', 'Visit or email.']);
   });
 });

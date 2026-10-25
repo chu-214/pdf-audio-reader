@@ -4,6 +4,7 @@ import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { openPdf } from '../lib/pdf';
 import { loadFile } from '../lib/storage';
 import { isIncluded } from '../lib/content';
+import { isUrlOnly } from '../lib/urls';
 import { REASON_LABELS, type ReaderPage, type ScanSettings } from '../types';
 
 type Props = {
@@ -53,7 +54,7 @@ export default function SourcePreview({ documentId, page, settings, activeBlock,
       {documentId === 'folio-demo' ? <div className="demo-paper">{page.blocks.map(b => <span key={b.id} style={{ position: 'absolute', left: `${b.x / page.width * 100}%`, top: `${b.y / page.height * 100}%`, width: `${b.width / page.width * 100}%`, fontSize: `${b.fontSize / page.width * 36}cqw`, fontWeight: b.heading ? 700 : 400 }}>{b.text}</span>)}</div> : <canvas ref={canvasRef} />}
       {!busy && page.blocks.map(b => {
         const included = isIncluded(b, settings);
-        return <button key={b.id} title={`${included ? 'Included' : b.reason ? REASON_LABELS[b.reason] : 'Manually skipped'}: ${b.text}. Click to ${included ? 'skip' : 'include'}.`} aria-label={`${included ? 'Skip' : 'Include'}: ${b.text}`} className={`source-region ${included ? 'included' : 'excluded'} ${activeBlock === b.id ? 'speaking' : ''}`} onClick={() => onToggle(b.id)} style={{ left: `${b.x / page.width * 100}%`, top: `${b.y / page.height * 100}%`, width: `${b.width / page.width * 100}%`, height: `${Math.max(b.height, 10) / page.height * 100}%` }} />;
+        return <button key={b.id} disabled={isUrlOnly(b.text)} title={isUrlOnly(b.text) ? 'URLs are never narrated' : `${included ? 'Included' : b.reason ? REASON_LABELS[b.reason] : 'Manually skipped'}: ${b.text}. Click to ${included ? 'skip' : 'include'}.`} aria-label={`${included ? 'Skip' : 'Include'}: ${b.text}`} className={`source-region ${included ? 'included' : 'excluded'} ${activeBlock === b.id ? 'speaking' : ''}`} onClick={() => onToggle(b.id)} style={{ left: `${b.x / page.width * 100}%`, top: `${b.y / page.height * 100}%`, width: `${b.width / page.width * 100}%`, height: `${Math.max(b.height, 10) / page.height * 100}%` }} />;
       })}
       {busy && <div className="source-loading"><LoaderCircle className="spin" size={24} /> Rendering page</div>}
     </div></div>}
